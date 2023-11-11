@@ -10,6 +10,7 @@ __pycache__
 # .tfstate files
 *.tfstate
 *.tfstate.*
+.terraform*
 
 *.zip
 lambda_package/
