@@ -1,5 +1,8 @@
 # db_purge
 
+## Lambda 
+[README](/lambda_source/README.md)
+
 ## Folders 
    |-lambda_source - lambda file  
    |-terraform_infra - terraform scripts to create test resources  
