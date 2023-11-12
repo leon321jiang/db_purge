@@ -3,7 +3,7 @@ from botocore.exceptions import ClientError
 import json
 
 dynamodb = boto3.client('dynamodb')
-table_name = 'DTABLE_NAME_TO_BE_CHANGED'
+table_name = 'onboarded_db_list'
 deleted_table_name = 'Records_Deleted'
 
 def lambda_handler(event, context):
@@ -20,19 +20,19 @@ def lambda_handler(event, context):
             'body': json.dumps(f"Error backing up the DynamoDB table: {e}")
         }
 
-    # Extract the DB_ID from the event
-    db_id = event['DB_ID']
-    if not db_id:
+    # Extract the db_name from the event
+    db_name = event['db_name']
+    if not db_name:
         return {
             'statusCode': 400,
-            'body': json.dumps("No DB_ID provided in input")
+            'body': json.dumps("No db_name provided in input")
         }
 
     # Check if the item exists
     try:
         get_response = dynamodb.get_item(
             TableName=table_name,
-            Key={'DB_ID': {'S': db_id}}
+            Key={'db_name': {'S': db_name}}
         )
     except ClientError as e:
         return {
@@ -42,7 +42,7 @@ def lambda_handler(event, context):
 
     # If the item does not exist, return a message
     if 'Item' not in get_response:
-        print(f'db id not exist : {db_id}')
+        print(f'db id not exist : {db_name}')
         return {
             'statusCode': 404,
             'body': json.dumps("The record doesn't exist")
@@ -65,7 +65,7 @@ def lambda_handler(event, context):
     try:
         delete_response = dynamodb.delete_item(
             TableName=table_name,
-            Key={'DB_ID': {'S': db_id}}
+            Key={'db_name': {'S': db_name}}
         )
     except ClientError as e:
         return {
@@ -76,5 +76,5 @@ def lambda_handler(event, context):
     # Return a success message
     return {
         'statusCode': 200,
-        'body': json.dumps(f"Item with DB_ID {db_id} deleted successfully")
+        'body': json.dumps(f"Item with db_name {db_name} deleted successfully")
     }

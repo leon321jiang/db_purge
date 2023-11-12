@@ -2,8 +2,8 @@
 
 ## Description
 This Lambda function performs the following actions:
-1. Creates a backup of a specified DynamoDB table named 'DTABLE_NAME_TO_BE_CHANGED'.
-2. Deletes an item from the table, identified by the partition key 'DB_ID', provided as input to the Lambda.
+1. Creates a backup of a specified DynamoDB table named 'onboarded_db_list'.
+2. Deletes an item from the table, identified by the partition key 'db_name', provided as input to the Lambda.
 3. Bcckup the deleted item to a table named 'Records_Deleted'
 
 ## Setup
@@ -24,6 +24,6 @@ Make sure the execution role for the Lambda function has these permissions.
 Deploy the Lambda function using the AWS CLI or the AWS Management Console, ensuring the execution role has the necessary permissions.
 
 ### Invocation
-Invoke the Lambda function by passing the 'DB_ID' in the event payload:
+Invoke the Lambda function by passing the 'db_name' in the event payload:
 ```bash
-aws lambda invoke --function-name <FunctionName> --payload '{"DB_ID": "<value>"}' response.json
+aws lambda invoke --function-name <FunctionName> --payload '{"db_name": "<value>"}' response.json

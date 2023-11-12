@@ -3,18 +3,18 @@ from botocore.exceptions import ClientError
 import json
 
 dynamodb = boto3.client('dynamodb')
-table_name = 'DTABLE_NAME_TO_BE_CHANGED'
-deleted_table_name = 'Records_Deleted'
+db_list_table_name = 'onboarded_db_list'
+deleted_table_name = 'records_deleted'
 
 def lambda_handler(event, context):
     print(event)
     # Backup the table
     try:
         backup_response = dynamodb.create_backup(
-            TableName=table_name,
-            BackupName=f"{table_name}-backup-{context.aws_request_id}"
+            TableName=db_list_table_name,
+            BackupName=f"{db_list_table_name}-backup-{context.aws_request_id}"
         )
-        print(f'backup {table_name} successful for request {context.aws_request_id}')
+        print(f'backup {db_list_table_name} successful for request {context.aws_request_id}')
     except ClientError as e:
         print(f"Error backing up the DynamoDB table: {e}")
         return {
@@ -22,20 +22,20 @@ def lambda_handler(event, context):
             'body': json.dumps(f"Error backing up the DynamoDB table: {e}")
         }
 
-    # Extract the DB_ID from the event
-    db_id = event['DB_ID']
-    if not db_id:
-        print("No DB_ID provided in input")
+    # Extract the db_name from the event
+    db_name = event['db_name']
+    if not db_name:
+        print("No db_name provided in input")
         return {
             'statusCode': 400,
-            'body': json.dumps("No DB_ID provided in input")
+            'body': json.dumps("No db_name provided in input")
         }
 
     # Check if the item exists
     try:
         get_response = dynamodb.get_item(
-            TableName=table_name,
-            Key={'DB_ID': {'S': db_id}}
+            TableName=db_list_table_name,
+            Key={'db_name': {'S': db_name}}
         )
         print(f'{get_response} successfull get')
     except ClientError as e:
@@ -47,7 +47,7 @@ def lambda_handler(event, context):
 
     # If the item does not exist, return a message
     if 'Item' not in get_response:
-        print(f'db id not exist : {db_id}')
+        print(f'db id not exist : {db_name}')
         return {
             'statusCode': 404,
             'body': json.dumps("The record doesn't exist")
@@ -56,7 +56,7 @@ def lambda_handler(event, context):
     # Backup the item to be deleted
     item = get_response['Item']
     try:
-        print(f"trying to backup DB_ID {db_id}")
+        print(f"trying to backup db_name {db_name}")
         dynamodb.put_item(
             TableName=deleted_table_name,
             Item=item
@@ -67,14 +67,14 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps(f"Error backing up the item to {deleted_table_name}: {e}")
         }
-    print(f'succesfully backed up the item {db_id} to {deleted_table_name}')
+    print(f'succesfully backed up the item {db_name} to {deleted_table_name}')
 
     # If the item exists, proceed to delete it
     try:
-        print(f"trying to delete DB_ID {db_id}")
+        print(f"trying to delete db_name {db_name}")
         delete_response = dynamodb.delete_item(
-            TableName=table_name,
-            Key={'DB_ID': {'S': db_id}}
+            TableName=db_list_table_name,
+            Key={'db_name': {'S': db_name}}
         )
     except ClientError as e:
         print(f"Error deleting the item from DynamoDB table: {e}")
@@ -84,8 +84,8 @@ def lambda_handler(event, context):
         }
 
     # Return a success message
-    print(f"Item with DB_ID {db_id} deleted successfully")
+    print(f"Item with db_name {db_name} deleted successfully")
     return {
         'statusCode': 200,
-        'body': json.dumps(f"Item with DB_ID {db_id} deleted successfully")
+        'body': json.dumps(f"Item with db_name {db_name} deleted successfully")
     }

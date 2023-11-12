@@ -3,23 +3,23 @@ provider "aws" {
 }
 
 resource "aws_dynamodb_table" "example" {
-  name         = "DTABLE_NAME_TO_BE_CHANGED"
+  name         = "onboarded_db_list"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "DB_ID"
+  hash_key     = "db_name"
 
   attribute {
-    name = "DB_ID"
+    name = "db_name"
     type = "S"
   }
 }
 
-resource "aws_dynamodb_table" "Records_Deleted" {
-  name         = "Records_Deleted"
+resource "aws_dynamodb_table" "records_deleted" {
+  name         = "records_deleted"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "DB_ID"
+  hash_key     = "db_name"
 
   attribute {
-    name = "DB_ID"
+    name = "db_name"
     type = "S"
   }
 }
